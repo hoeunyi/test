@@ -36,9 +36,15 @@ function PostWritePage() {
   const navigate = useNavigate(); 
   const[title,setTitle] = useState('');
   const[content, setContent] = useState(''); 
+
  
   const handleSubmit = async(e)=> {
-    e.preventDefault(); //페이지 리로드 방지
+    e.preventDefault(); //페이지 리로드 방지]
+
+    if(!title ||!content){
+      alert("제목과 내용을 모두 입력하세요") 
+      return;
+    }
     try {
        await axios.post("http://localhost:3000/posts", {
         title, 
@@ -54,19 +60,18 @@ function PostWritePage() {
   }; 
   return (
     <FormWrapper>
-      <h2>글 작성하기</h2>
       <Form onSubmit ={handleSubmit} >
         <Input
           type="text"
           name="title"
           value={title}
-          placeholder="Title"
+          placeholder="제목을 입력하세요"
           onChange ={(e)=> setTitle(e.target.value)}
         />
         <TextArea
           name="content"
           value={content}
-          placeholder="Content"
+          placeholder="내용을 입력하세요"
           rows="10"
           onChange={(e)=>setContent(e.target.value)}
         />

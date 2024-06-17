@@ -3,6 +3,7 @@ import axios from "axios";
 import { useNavigate, useParams } from "react-router-dom";
 import styled from "styled-components";
 import Button from "../ui/Button";
+import RightButton from "../ui/RightButton";
 
 const Wrapper = styled.div`
   padding: 16px;
@@ -11,6 +12,7 @@ const Wrapper = styled.div`
   flex-direction: column;
   align-items: center;
   justify-content: center;
+
 `;
 
 const Container = styled.div`
@@ -28,11 +30,15 @@ const PostContainer = styled.div`
   padding: 8px 16px;
   border: 1px solid grey;
   border-radius: 8px;
+  height : 500px;
 `;
 
 const TitleText = styled.p`
   font-size: 28px;
   font-weight: 500;
+  margin-bottom : 16px;
+  padding-bottom: 16px; 
+  border-bottom : 2px solid gray;
 `;
 
 const ContentText = styled.p`
@@ -40,6 +46,12 @@ const ContentText = styled.p`
   line-height: 32px;
   white-space: pre-wrap;
 `;
+
+const ButtonContainer = styled.div`
+    width : 100%; 
+    max-width : 720px; 
+    display : flex;
+`; 
 
 function PostViewPage() {
     const navigate = useNavigate();
@@ -99,21 +111,20 @@ function PostViewPage() {
             <Container>
                 <Button
                     onClick={() => {
-                        navigate("/");
-                    }}
-                >
-                    뒤로가기
-                </Button>
+                        navigate("/")
+                    }}>뒤로가기</Button>
                 <PostContainer>
                     <TitleText>{post.TITLE}</TitleText>
                     <ContentText>{post.CONTENT}</ContentText>
                 </PostContainer>
-                <Button
+
+                </Container>
+                <ButtonContainer>
+                <RightButton
                     onClick={handleDelete}
-                >
-                    삭제
-                </Button>
-            </Container>
+                >삭제하기</RightButton>
+                </ButtonContainer>
+          
         </Wrapper>
     );
 }

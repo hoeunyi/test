@@ -26,6 +26,12 @@ const Container = styled.div`
     }
 `; 
 
+const ButtonContainer = styled.div`
+    width : 100%
+    max-width : 720px; 
+    display : flex; 
+`; 
+
 function MainPage(props){
    // const {} = props; 
     const navigate = useNavigate(); 
@@ -49,13 +55,11 @@ console.log(posts);
                             navigate(`/post/${item}`);
                         }}
                         />
-
-                    <Button 
+                         <Button 
                         title = "글 작성하기 "
                         onClick = {()=>{
                         navigate("/post-write");
-                    }}>글 작성하기</Button>
-                    
+                    }}>글 작성하기</Button>  
             </Container>
         </Wrapper>
     );

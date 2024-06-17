@@ -1,6 +1,6 @@
 import styled from "styled-components";
 
-const Button = styled.button`
+const RightButton = styled.button`
   padding: 8px 16px;
   margin: 4px;
   border: none;
@@ -8,6 +8,7 @@ const Button = styled.button`
   background-color: #007bff;
   color: white;
   cursor: pointer;
+  justifyContent:'flex-end';
 `;
 
-export default Button;
+export default RightButton;

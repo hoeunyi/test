@@ -47,6 +47,8 @@ const TableRow = styled.tr`
   }
 `;
 
+
+
 function PostList(props) {
     const { posts, onClickItem } = props;
 
@@ -60,9 +62,9 @@ function PostList(props) {
           </tr>
         </thead>
         <tbody>
-          {posts.map((post) => (
+          {posts.map((post, index) => (
             <TableRow key={post.id} onClick={() => onClickItem(post.id)}>
-              <TableCellId>{post.id}</TableCellId>
+              <TableCellId>{index+1}</TableCellId>
               <TableCellContent>{post.title}</TableCellContent>
             </TableRow>
           ))}
