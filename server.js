@@ -69,16 +69,19 @@ app.get('/post/:postId', async (req, res) => {
         conn = await pool.getConnection();
         const query = 'SELECT TITLE, CONTENT FROM posts WHERE ID = ?';
         const [result] = await conn.query(query, [postId]);
+        
+        // 각 게시물에 해당하는 댓글 조회하기 
+        const query1 = 'SELECT CONTENT FROM comment WHERE boardID = ?'; 
+        const commentResult = await conn.query(query1,[postId]); 
 
-        console.log('Query result:', result); 
-        res.json(result);
+        res.json({result, commentResult});
+
     } catch (err) {
         console.log('error:', err);
     } finally {
         if (conn) conn.release();
     }
 });
-
 
 //게시물 삭제하기 
 app.delete('/post/:postId', async(req, res) => {
@@ -88,14 +91,11 @@ app.delete('/post/:postId', async(req, res) => {
         conn = await pool.getConnection();
         const query = 'DELETE FROM  posts WHERE ID = ?';
         const result = await conn.query(query, [postId]);
-        console.log("result:");
         // 쿼리 결과에서 BigInt 값을 문자열로 변환
         const response = {
             affectedRows: result.affectedRows, //변경된 행수
             warningStatus: result.warningStatus //에러 발생 
         };
-
-        console.log("Query result: ", response);
         res.json(response);
 
     } catch (err) {
@@ -104,4 +104,32 @@ app.delete('/post/:postId', async(req, res) => {
     } finally {
         if (conn) conn.release();
     }
-}); 
+});
+
+//게시물 update 하기 
+app.put('/post/:postId/update', async (req, res) => {
+  let conn;
+  try {
+    conn = await pool.getConnection();
+    const { postId } = req.params;
+    const { updatedTitle, updatedContent } = req.body;
+
+    if (!updatedTitle || !updatedContent) {
+      return res.status(400).send('Title and content cannot be empty');
+    }
+    const query = "UPDATE posts SET TITLE = ?, CONTENT = ? WHERE ID = ?";
+    const result = await conn.query(query, [updatedTitle, updatedContent, postId]);
+
+    if (result.affectedRows === 0) {
+      return res.status(404).send('Post not found');
+    }
+
+    res.status(201).json();
+    console.log("Data is updated");
+  } catch (err) {
+    console.error('Error:', err);
+    res.status(500).send();
+  } finally {
+    if (conn) conn.release();
+  }
+});

@@ -7,6 +7,7 @@ import Button from "../ui/Button";
 import styled from "styled-components";
 import PostList from  "../list/PostList"; 
 
+
 const Wrapper = styled.div`
     padding : 16px; 
     width : calc(100%-32px);
@@ -24,12 +25,6 @@ const Container = styled.div`
             margin-bottom : 16px; 
         }
     }
-`; 
-
-const ButtonContainer = styled.div`
-    width : 100%
-    max-width : 720px; 
-    display : flex; 
 `; 
 
 function MainPage(props){

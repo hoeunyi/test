@@ -7,6 +7,7 @@ import styled from 'styled-components';
 import MainPage from './frontend/component/page/MainPage';
 import PostWritePage from './frontend/component/page/PostWritePage';
 import PostViewPage from './frontend/component/page/PostViewPage';
+import PostUpdatePage from './frontend/component/page/PostUpdatePage';
 
 import {
   BrowserRouter, 
@@ -28,6 +29,7 @@ function App(){
         <Route index element= {<MainPage/>}/> 
               <Route path="/post-write" element={<PostWritePage />} />
               <Route path="/post/:postId" element={<PostViewPage/> }/>
+              <Route path= "post/:postId/update" element={<PostUpdatePage/>}/>
       </Routes>
     </BrowserRouter>
   );

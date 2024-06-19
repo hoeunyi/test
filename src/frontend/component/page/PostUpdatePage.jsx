@@ -26,18 +26,31 @@ const PostContainer = styled.div`
   border-radius: 8px;
   background-color: #fff;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
 `;
 
-const TitleText = styled.h1`
+const TitleText = styled.input`
   font-size: 24px;
   font-weight: bold;
   margin-bottom: 16px;
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
 `;
 
-const ContentText = styled.p`
+const ContentText = styled.textarea`
   font-size: 16px;
   line-height: 1.5;
   white-space: pre-wrap;
+  width: 100%;
+  height: 200px;
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  resize: none;
 `;
 
 const ButtonContainer = styled.div`
@@ -47,8 +60,6 @@ const ButtonContainer = styled.div`
   justify-content: space-between;
   margin-top: 16px;
 `;
-
-
 
 const RightButton = styled.button`
   padding: 8px 16px;
@@ -65,25 +76,29 @@ const RightButton = styled.button`
   }
 `;
 
-
-
-function PostViewPage() {
+function PostUpdatePage() {
   const navigate = useNavigate();
   const { postId } = useParams();
   const [post, setPost] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [comments, setComments] = useState([]);
+  const [updatedTitle, setUpdatedTitle] = useState("");
+  const [updatedContent, settUpdatedContent] = useState("");
+  const [title, setTitle] = useState("");
+  const [content, setContent] = useState("");
 
+  //기존 게시물을 읽어옴 
   useEffect(() => {
     const fetchPost = async () => {
       try {
         const response = await axios.get(`http://localhost:3000/post/${postId}`);
         console.log('response:', response.data);
-
         if (response.data) {
           setPost(response.data.result);
           setComments(response.data.commentResult);
+          setTitle(response.data.result.title);
+          setContent(response.data.result.content);
         } else {
           setError(new Error("Post not found"));
         }
@@ -94,7 +109,6 @@ function PostViewPage() {
         setLoading(false);
       }
     };
-
     fetchPost();
   }, [postId]);
 
@@ -110,37 +124,56 @@ function PostViewPage() {
     return <div>Post not found</div>;
   }
 
-  const handleDelete = async () => {
+  //수정 완료 버튼 
+  const handleUpdate = async () => {
     try {
-      await axios.delete(`http://localhost:3000/post/${postId}`);
+      await axios.put(`http://localhost:3000/post/${postId}/update`, {
+        updatedTitle,
+        updatedContent,
+      });
       navigate('/');
     } catch (error) {
       console.error(error);
     }
   };
 
-  const handleUpdate = async () => {
-    navigate(`/post/${postId}/update`)
+  //취소 버튼 
+  const handleCancel = async()=>{
+    navigate(`/post/${postId}`);
   }
-
+  
   return (
     <Wrapper>
       <Container>
         <Button onClick={() => navigate("/")}>메인화면</Button>
       </Container>
+
       <Container>
         <PostContainer>
-          <TitleText>{post.TITLE}</TitleText>
-          <ContentText>{post.CONTENT}</ContentText>
+          <TitleText 
+            name = "title"
+            defaultValue={title}
+            value={title} 
+            onChange={(e) => setUpdatedTitle(e.target.value)} 
+            //placeholder="제목을 입력하세요" 
+          />
+          <ContentText 
+            name ="content"
+            defaultValue={content}
+            value={content} 
+            onChange={(e) => settUpdatedContent(e.target.value)} 
+            //placeholder="내용을 입력하세요" 
+          />
         </PostContainer>
       </Container>
-      <Comment comments = {comments}/>
+
+      <Comment comments={comments} />
       <ButtonContainer>
-        <RightButton onClick={handleDelete}>삭제</RightButton>
-        <RightButton onClick={handleUpdate}>수정</RightButton>
+        <RightButton onClick={handleCancel}>취소</RightButton>
+        <RightButton onClick={handleUpdate}>수정완료</RightButton>
       </ButtonContainer>
     </Wrapper>
   );
 }
 
-export default PostViewPage;
+export default PostUpdatePage;
