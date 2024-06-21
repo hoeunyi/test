@@ -79,7 +79,6 @@ function PostViewPage() {
     const fetchPost = async () => {
       try {
         const response = await axios.get(`http://localhost:3000/post/${postId}`);
-        console.log('response:', response.data);
 
         if (response.data) {
           setPost(response.data.result);

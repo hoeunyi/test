@@ -31,11 +31,11 @@ const PostContainer = styled.div`
   align-items: flex-start;
 `;
 
-const TitleText = styled.input`
+const TitleText = styled.textarea`
   font-size: 24px;
   font-weight: bold;
   margin-bottom: 16px;
-  width: 100%;
+  width: 97%;
   padding: 8px;
   border: 1px solid #ddd;
   border-radius: 4px;
@@ -45,7 +45,7 @@ const ContentText = styled.textarea`
   font-size: 16px;
   line-height: 1.5;
   white-space: pre-wrap;
-  width: 100%;
+  width: 97%;
   height: 200px;
   padding: 8px;
   border: 1px solid #ddd;
@@ -84,21 +84,21 @@ function PostUpdatePage() {
   const [error, setError] = useState(null);
   const [comments, setComments] = useState([]);
   const [updatedTitle, setUpdatedTitle] = useState("");
-  const [updatedContent, settUpdatedContent] = useState("");
-  const [title, setTitle] = useState("");
-  const [content, setContent] = useState("");
+  const [updatedContent, setUpdatedContent] = useState("");
 
-  //기존 게시물을 읽어옴 
+  // 기존 게시물을 읽어옴
   useEffect(() => {
     const fetchPost = async () => {
       try {
         const response = await axios.get(`http://localhost:3000/post/${postId}`);
-        console.log('response:', response.data);
         if (response.data) {
-          setPost(response.data.result);
-          setComments(response.data.commentResult);
-          setTitle(response.data.result.title);
-          setContent(response.data.result.content);
+          const post = response.data.result;
+          const comments = response.data.commentResult;
+          
+          setPost(post);
+          setComments(comments);
+          setUpdatedTitle(post.TITLE);
+          setUpdatedContent(post.CONTENT);
         } else {
           setError(new Error("Post not found"));
         }
@@ -124,12 +124,15 @@ function PostUpdatePage() {
     return <div>Post not found</div>;
   }
 
-  //수정 완료 버튼 
+  // 수정 완료 버튼
   const handleUpdate = async () => {
+    if (!updatedTitle || !updatedContent) {
+      alert("제목과 내용을 모두 입력하세요");
+      return;
+    }
     try {
       await axios.put(`http://localhost:3000/post/${postId}/update`, {
-        updatedTitle,
-        updatedContent,
+        updatedTitle,updatedContent,
       });
       navigate('/');
     } catch (error) {
@@ -137,11 +140,11 @@ function PostUpdatePage() {
     }
   };
 
-  //취소 버튼 
-  const handleCancel = async()=>{
+  // 취소 버튼
+  const handleCancel = () => {
     navigate(`/post/${postId}`);
-  }
-  
+  };
+
   return (
     <Wrapper>
       <Container>
@@ -150,19 +153,15 @@ function PostUpdatePage() {
 
       <Container>
         <PostContainer>
-          <TitleText 
-            name = "title"
-            defaultValue={title}
-            value={title} 
-            onChange={(e) => setUpdatedTitle(e.target.value)} 
-            //placeholder="제목을 입력하세요" 
+          <TitleText
+            name="title"
+            value={updatedTitle}
+            onChange={(e) => setUpdatedTitle(e.target.value)}
           />
-          <ContentText 
-            name ="content"
-            defaultValue={content}
-            value={content} 
-            onChange={(e) => settUpdatedContent(e.target.value)} 
-            //placeholder="내용을 입력하세요" 
+          <ContentText
+            name="content"
+            value={updatedContent}
+            onChange={(e) => setUpdatedContent(e.target.value)}
           />
         </PostContainer>
       </Container>

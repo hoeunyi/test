@@ -133,3 +133,23 @@ app.put('/post/:postId/update', async (req, res) => {
     if (conn) conn.release();
   }
 });
+
+//댓글 추가하기 
+app.post('/post/:postId/comments', async (req, res)=> {
+  let conn; 
+  try {
+    conn = await pool.getConnection();
+    const {comment, requestId,}  = req.body; 
+    const {postId} = req.params; 
+    console.log(postId,":", comment);
+    
+    const query = "INSERT INTO comment(content, boardId) VALUES (?, ?)"
+    await conn.query(query, [comment, postId]); 
+    res.status(201).json(); 
+    console.log('Received commentData is inserted!');
+  }catch (err){
+    console.log("error: ", err); 
+  }finally {
+    if(conn) conn.release(); 
+  }
+})

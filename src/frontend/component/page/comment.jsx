@@ -1,5 +1,8 @@
+import React, {useState} from 'react'; 
 import CommentList from "../list/CommentList";
 import styled from "styled-components";
+import {useParams} from "react-router-dom"; 
+import axios from "axios";
 
 const Container = styled.div`
   width: 100%;
@@ -51,16 +54,43 @@ const RightButton = styled.button`
   }
 `;
 
+
+
 function Comment(props){
+    const {postId} = useParams(); 
     const {comments} = props
-return (
+    const {comment, setComment} = useState('');
+
+    const handleSubmit = async()=> {
+    
+      if(!comment){
+        alert("내용을 입력하세요");
+        return; 
+      }
+      try {
+        await axios.post(`http://localhost:3000/post/${postId}/comments`, {
+          comment,
+          postId, 
+        }); 
+        console.log("comment is successfully posted");
+      }catch(error){
+        console.error(error);
+      }
+    }
+    
+    return (
 <Container>
         <h2>댓글</h2>
         <CommentContainer>
           <CommentList comments={comments} />
           <InputContainer>
-            <Input placeholder="댓글을 입력하세요" />
-            <RightButton>작성</RightButton>
+            <Input
+              name ="comment"
+              value = {comment} 
+              placeholder="댓글을 입력하세요" 
+              onChange ={(e)=> setComment(e.target.value)}
+            />
+            <RightButton onClick={handleSubmit}>작성</RightButton>
           </InputContainer>
         </CommentContainer>
       </Container>

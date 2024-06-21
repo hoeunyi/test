@@ -40,7 +40,6 @@ function MainPage(props){
     .catch(error =>console.error(error));
   }, []);
 
-console.log(posts);
     return (
         <Wrapper> 
             <Container>
