@@ -73,7 +73,7 @@ app.get('/post/:postId', async (req, res) => {
         // 각 게시물에 해당하는 댓글 조회하기 
         const query1 = 'SELECT CONTENT FROM comment WHERE boardID = ?'; 
         const commentResult = await conn.query(query1,[postId]); 
-
+        console.log("commentResult: ",commentResult);
         res.json({result, commentResult});
 
     } catch (err) {
@@ -91,6 +91,7 @@ app.delete('/post/:postId', async(req, res) => {
         conn = await pool.getConnection();
         const query = 'DELETE FROM  posts WHERE ID = ?';
         const result = await conn.query(query, [postId]);
+
         // 쿼리 결과에서 BigInt 값을 문자열로 변환
         const response = {
             affectedRows: result.affectedRows, //변경된 행수
@@ -112,13 +113,13 @@ app.put('/post/:postId/update', async (req, res) => {
   try {
     conn = await pool.getConnection();
     const { postId } = req.params;
-    const { updatedTitle, updatedContent } = req.body;
+    const { title, content } = req.body;
 
-    if (!updatedTitle || !updatedContent) {
+    if (!title || !content) {
       return res.status(400).send('Title and content cannot be empty');
     }
     const query = "UPDATE posts SET TITLE = ?, CONTENT = ? WHERE ID = ?";
-    const result = await conn.query(query, [updatedTitle, updatedContent, postId]);
+    const result = await conn.query(query, [title, content, postId]);
 
     if (result.affectedRows === 0) {
       return res.status(404).send('Post not found');
@@ -135,12 +136,11 @@ app.put('/post/:postId/update', async (req, res) => {
 });
 
 //댓글 추가하기 
-app.post('/post/:postId/comments', async (req, res)=> {
+app.post('/post/:postId', async (req, res)=> {
   let conn; 
   try {
     conn = await pool.getConnection();
-    const {comment, requestId,}  = req.body; 
-    const {postId} = req.params; 
+    const {comment, postId,}  = req.body;  
     console.log(postId,":", comment);
     
     const query = "INSERT INTO comment(content, boardId) VALUES (?, ?)"
@@ -149,6 +149,23 @@ app.post('/post/:postId/comments', async (req, res)=> {
     console.log('Received commentData is inserted!');
   }catch (err){
     console.log("error: ", err); 
+  }finally {
+    if(conn) conn.release(); 
+  }
+})
+
+//댓글 삭제하기 
+app.delete('/post/:postId/comments', async(req, res)=> {
+  let conn; 
+  try {
+    conn = await pool.getConnection(); 
+    const {id} =req.params
+    console.log("delete comment id:", id);
+    const query = "DELETE FROM comment where ID = ?"
+    await conn.query(query, [id]); 
+    res.status(201).json(); 
+  }catch (err){
+    console.log("error:", err); 
   }finally {
     if(conn) conn.release(); 
   }

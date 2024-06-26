@@ -3,7 +3,7 @@ import axios from "axios";
 import { useNavigate, useParams } from "react-router-dom";
 import styled from "styled-components";
 import Button from "../ui/Button";
-import Comment from "./comment";
+import Comment from "./comment/Comment";
 
 const Wrapper = styled.div`
   padding: 16px;
@@ -48,8 +48,6 @@ const ButtonContainer = styled.div`
   margin-top: 16px;
 `;
 
-
-
 const RightButton = styled.button`
   padding: 8px 16px;
   margin: 4px;
@@ -65,15 +63,13 @@ const RightButton = styled.button`
   }
 `;
 
-
-
 function PostViewPage() {
   const navigate = useNavigate();
   const { postId } = useParams();
   const [post, setPost] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [comments, setComments] = useState([]);
+  const [comments, setComments] = useState();
 
   useEffect(() => {
     const fetchPost = async () => {
@@ -83,6 +79,7 @@ function PostViewPage() {
         if (response.data) {
           setPost(response.data.result);
           setComments(response.data.commentResult);
+          console.log(comments);
         } else {
           setError(new Error("Post not found"));
         }
@@ -109,7 +106,9 @@ function PostViewPage() {
     return <div>Post not found</div>;
   }
 
+  //삭제 버튼 클릭 
   const handleDelete = async () => {
+    //alert ("삭제하시겠습니까") 로직 추가 
     try {
       await axios.delete(`http://localhost:3000/post/${postId}`);
       navigate('/');
@@ -118,6 +117,7 @@ function PostViewPage() {
     }
   };
 
+  //수정 버튼 클릭> 수정화면으로 이동 
   const handleUpdate = async () => {
     navigate(`/post/${postId}/update`)
   }

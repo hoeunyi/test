@@ -3,7 +3,7 @@ import axios from "axios";
 import { useNavigate, useParams } from "react-router-dom";
 import styled from "styled-components";
 import Button from "../ui/Button";
-import Comment from "./comment";
+import Comment from "./comment/Comment";
 
 const Wrapper = styled.div`
   padding: 16px;
@@ -79,26 +79,28 @@ const RightButton = styled.button`
 function PostUpdatePage() {
   const navigate = useNavigate();
   const { postId } = useParams();
-  const [post, setPost] = useState(null);
+  const [post, setPost] = useState({title:"", content:""});
+  const [originalPost, setOriginalPost] = useState({title:"", content:""})
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [comments, setComments] = useState([]);
-  const [updatedTitle, setUpdatedTitle] = useState("");
-  const [updatedContent, setUpdatedContent] = useState("");
+  // const [title, setTitle] = useState("");
+  // const [content, setContent] = useState("");
+  // const [originalTitle, setOriginalTitle] = useState(""); 
+  // const [originalContent, setOriginalContent]=useState("");  
+  // const [updatedTitle, setUpdatedTitle] = useState(""); 
+  // const [updatedContent, setUpdatedContent] = useState(""); 
 
-  // 기존 게시물을 읽어옴
+  //변경 전 데이터 세팅 
   useEffect(() => {
     const fetchPost = async () => {
       try {
         const response = await axios.get(`http://localhost:3000/post/${postId}`);
         if (response.data) {
-          const post = response.data.result;
-          const comments = response.data.commentResult;
-          
-          setPost(post);
-          setComments(comments);
-          setUpdatedTitle(post.TITLE);
-          setUpdatedContent(post.CONTENT);
+          const fetchedPost = response.data.result;
+          setPost({title:fetchedPost.TITLE, content:fetchedPost.CONTENT});
+          setOriginalPost({title:fetchedPost.TITLE, content:fetchedPost.CONTENT})
+          setComments(response.data.commentResult);
         } else {
           setError(new Error("Post not found"));
         }
@@ -125,14 +127,26 @@ function PostUpdatePage() {
   }
 
   // 수정 완료 버튼
-  const handleUpdate = async () => {
-    if (!updatedTitle || !updatedContent) {
-      alert("제목과 내용을 모두 입력하세요");
+  const handleUpdate = async() => {
+    // console.log(title, "/", content); 
+    // console.log("original: ", originalTitle,"/", originalContent); 
+    // console.log("update: ", updatedTitle,"/", updatedContent);
+
+    //1 제목이나 내용이 없는 경우 > alert ("제목과 내용을 모두 입력하세요")
+    if(post.title.trim()===""||post.content.trim()===""){
+      alert("제목과 내용을 모두 입력하세요"); 
       return;
     }
+    //2 수정된 내용이 없는 경우 > alert ("변경 사항이 없습니다.")
+    if(post.title===originalPost.title&&post.content===originalPost.content){
+      alert("변경 사항이 없습니다."); 
+      return;
+    }
+   
     try {
       await axios.put(`http://localhost:3000/post/${postId}/update`, {
-        updatedTitle,updatedContent,
+        title:post.title, 
+        content:post.content,
       });
       navigate('/');
     } catch (error) {
@@ -145,6 +159,14 @@ function PostUpdatePage() {
     navigate(`/post/${postId}`);
   };
 
+const handleChange = (e)=> {
+  const{name, value} = e.target; 
+  setPost((prevPost)=>({
+    ...prevPost, 
+    [name]:value, 
+  }));
+};
+
   return (
     <Wrapper>
       <Container>
@@ -155,13 +177,14 @@ function PostUpdatePage() {
         <PostContainer>
           <TitleText
             name="title"
-            value={updatedTitle}
-            onChange={(e) => setUpdatedTitle(e.target.value)}
+            defaultValue={post.title}
+            onChange={handleChange}
           />
           <ContentText
             name="content"
-            value={updatedContent}
-            onChange={(e) => setUpdatedContent(e.target.value)}
+            defaultValue={post.content}
+            onChange={handleChange}
+            
           />
         </PostContainer>
       </Container>
