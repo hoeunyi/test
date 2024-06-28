@@ -21,7 +21,6 @@ const CommentContainer = styled.div`
 
 function Comment(props){
     const {comments} = props
-    
     return (
 <Container>
         <h2>댓글</h2>

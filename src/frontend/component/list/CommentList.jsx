@@ -3,6 +3,7 @@ import styled from "styled-components";
 import { FaEdit, FaTrash } from "react-icons/fa";
 import axios from "axios";
 import { useParams } from "react-router-dom";
+import { useState } from "react";
 
 const Wrapper = styled.div`
   padding: 16px;
@@ -70,32 +71,48 @@ const EditInput = styled.input`
 `;
 
     function CommentList(props){
-        const {comments} = props;
+        const {comments:initialComments} = props;
         const {postId} = useParams; 
-        
-        //댓글 수정 
-        const handleEdit = () => {
-        }
+        const [comments, setComments] = useState(initialComments);
 
+        
         //댓글 삭제 
         const handleDelete = async(id) => {
          // alert("댓글을 삭제하겠습니까?"); //삭제 확인 로직 추가 
             try {
-              await axios.delete(`http://localhost:3000/post/${postId}/comments`, {id}); 
+              console.log("id: " , id);
+              await axios.delete(`http://localhost:3000/post/${postId}/comments`, {data : {id}}); 
+              window.location.reload(); 
             }catch(error){
               console.error(error); 
             }
         }
+
+        //댓글 수정 버튼> 수정 가능 상태로 전환  
+        const enableEditMode = (id) => {
+          setComments(comments.map((comment)=>comment.id ===id ? {...comment, isEditing: true}: comment));
+        } 
 
             return (
             <Wrapper>
                 <CommentContainer>
                 {comments.map((comment, index)=>(
                     <CommentItem key={index}>
+                      {comment.isEditing? (
+                        <>
+                        <EditInput
+                         value ={comment.CONTENT}
+                          onChange={(e)=>setComments(comments.map((c)=>
+                          c.id===comment.id? {...c, content: e.target.value}: c
+                        ))}
+                          />
+                         </>
+
+                      ))}
                          <CommentText>{comment.CONTENT}</CommentText> 
                          <IconContainer>
-                         <Icon onClick={handleEdit}><FaEdit/></Icon>
-                         <Icon onClick={()=>handleDelete}><FaTrash/></Icon>
+                         <Icon onClick={()=>enableEditMode(comment.ID)}><FaEdit/></Icon>
+                         <Icon onClick={()=>handleDelete(comment.ID)}><FaTrash/></Icon>
                        </IconContainer>
                        </CommentItem>
                 ))}

@@ -71,11 +71,9 @@ app.get('/post/:postId', async (req, res) => {
         const [result] = await conn.query(query, [postId]);
         
         // 각 게시물에 해당하는 댓글 조회하기 
-        const query1 = 'SELECT CONTENT FROM comment WHERE boardID = ?'; 
+        const query1 = 'SELECT ID, CONTENT FROM comment WHERE boardID = ?'; 
         const commentResult = await conn.query(query1,[postId]); 
-        console.log("commentResult: ",commentResult);
         res.json({result, commentResult});
-
     } catch (err) {
         console.log('error:', err);
     } finally {
@@ -141,7 +139,6 @@ app.post('/post/:postId', async (req, res)=> {
   try {
     conn = await pool.getConnection();
     const {comment, postId,}  = req.body;  
-    console.log(postId,":", comment);
     
     const query = "INSERT INTO comment(content, boardId) VALUES (?, ?)"
     await conn.query(query, [comment, postId]); 
@@ -159,8 +156,7 @@ app.delete('/post/:postId/comments', async(req, res)=> {
   let conn; 
   try {
     conn = await pool.getConnection(); 
-    const {id} =req.params
-    console.log("delete comment id:", id);
+    const {id} =req.body;
     const query = "DELETE FROM comment where ID = ?"
     await conn.query(query, [id]); 
     res.status(201).json(); 

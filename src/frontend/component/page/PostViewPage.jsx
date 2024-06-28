@@ -79,7 +79,6 @@ function PostViewPage() {
         if (response.data) {
           setPost(response.data.result);
           setComments(response.data.commentResult);
-          console.log(comments);
         } else {
           setError(new Error("Post not found"));
         }
