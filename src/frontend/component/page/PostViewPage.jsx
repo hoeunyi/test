@@ -107,13 +107,15 @@ function PostViewPage() {
 
   //삭제 버튼 클릭 
   const handleDelete = async () => {
-    //alert ("삭제하시겠습니까") 로직 추가 
+   if(window.confirm("해당 게시물을 삭제하시겠습니까?")){
     try {
       await axios.delete(`http://localhost:3000/post/${postId}`);
+      console.log("삭제되었습니다");
       navigate('/');
     } catch (error) {
       console.error(error);
     }
+  }
   };
 
   //수정 버튼 클릭> 수정화면으로 이동 

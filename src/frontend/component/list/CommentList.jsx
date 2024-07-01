@@ -1,6 +1,6 @@
 import React from "react";
 import styled from "styled-components";
-import { FaEdit, FaTrash } from "react-icons/fa";
+import { FaEdit, FaTrash, FaSave, FaTimes } from "react-icons/fa";
 import axios from "axios";
 import { useParams } from "react-router-dom";
 import { useState } from "react";
@@ -75,23 +75,47 @@ const EditInput = styled.input`
         const {postId} = useParams; 
         const [comments, setComments] = useState(initialComments);
 
-        
         //댓글 삭제 
         const handleDelete = async(id) => {
-         // alert("댓글을 삭제하겠습니까?"); //삭제 확인 로직 추가 
+
+         //삭제 여부 확인
+          if(window.confirm("해당 댓글을 삭제하시겠습니까?")){
             try {
               console.log("id: " , id);
               await axios.delete(`http://localhost:3000/post/${postId}/comments`, {data : {id}}); 
+              alert("삭제되었습니다");
               window.location.reload(); 
             }catch(error){
               console.error(error); 
             }
+          }
         }
 
         //댓글 수정 버튼> 수정 가능 상태로 전환  
         const enableEditMode = (id) => {
-          setComments(comments.map((comment)=>comment.id ===id ? {...comment, isEditing: true}: comment));
+          setComments(comments.map((comment)=>comment.ID ===id ? 
+          {...comment, isEditing: true}: comment));
         } 
+        
+        //댓글 수정 취소 
+        const disableEditMode = (id) => {
+          setComments(comments.map((comment)=>
+            comment.ID ===id ? {...comment, isEditing :false} :comment
+        ));
+        };
+
+        //댓글 수정 저장
+        const handleSave = async(id,updatedContent)=> {
+          try {
+            await axios.put(`http://localhost:3000/post/${postId}/comments`, {id,content:updatedContent}); 
+            setComments(comments.map((comment)=>
+            comment.ID===id ? {...comment, CONTENT:updatedContent, idEditing:false} :comment
+          )); 
+          window.location.reload(); 
+          } catch (error){
+            console.error(error); 
+          }
+        };
 
             return (
             <Wrapper>
@@ -99,22 +123,28 @@ const EditInput = styled.input`
                 {comments.map((comment, index)=>(
                     <CommentItem key={index}>
                       {comment.isEditing? (
-                        <>
+                        <div style ={{display:'flex', alignItem:'center', width: '100%'}}>
                         <EditInput
-                         value ={comment.CONTENT}
+                          defaultValue ={comment.CONTENT}
                           onChange={(e)=>setComments(comments.map((c)=>
-                          c.id===comment.id? {...c, content: e.target.value}: c
+                            c.ID===comment.ID? {...c, CONTENT: e.target.value}: c
                         ))}
-                          />
-                         </>
-
-                      ))}
-                         <CommentText>{comment.CONTENT}</CommentText> 
-                         <IconContainer>
-                         <Icon onClick={()=>enableEditMode(comment.ID)}><FaEdit/></Icon>
-                         <Icon onClick={()=>handleDelete(comment.ID)}><FaTrash/></Icon>
-                       </IconContainer>
-                       </CommentItem>
+                        />
+                        <IconContainer>
+                          <Icon onClick={()=>handleSave(comment.ID, comment.CONTENT)}><FaSave/></Icon>
+                          <Icon onClick={()=>disableEditMode(comment.ID)}><FaTimes/></Icon>
+                        </IconContainer>
+                        </div>
+                      ) : (
+                        <div style={{display: 'flex', alignItem:'center', width:'100%'}}>
+                          <CommentText>{comment.CONTENT}</CommentText> 
+                          <IconContainer>
+                            <Icon onClick={()=>enableEditMode(comment.ID)}><FaEdit/></Icon>
+                            <Icon onClick={()=>handleDelete(comment.ID)}><FaTrash/></Icon>
+                          </IconContainer>
+                        </div>
+                      )}
+                      </CommentItem>
                 ))}
                 </CommentContainer>
             </Wrapper>

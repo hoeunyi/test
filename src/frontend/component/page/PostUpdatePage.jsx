@@ -128,6 +128,7 @@ function PostUpdatePage() {
 
   // 수정 완료 버튼
   const handleUpdate = async() => {
+
     // console.log(title, "/", content); 
     // console.log("original: ", originalTitle,"/", originalContent); 
     // console.log("update: ", updatedTitle,"/", updatedContent);
@@ -148,7 +149,7 @@ function PostUpdatePage() {
         title:post.title, 
         content:post.content,
       });
-      navigate('/');
+      navigate(`/post/${postId}`);
     } catch (error) {
       console.error(error);
     }

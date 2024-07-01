@@ -166,3 +166,20 @@ app.delete('/post/:postId/comments', async(req, res)=> {
     if(conn) conn.release(); 
   }
 })
+
+//댓글 수정하기 
+app.put('/post/:postId/comments', async(req,res)=>{
+  let conn; 
+  try {
+    conn = await pool.getConnection(); 
+    const {id, content} = req.body;
+    const query = "UPDATE comment SET CONTENT =? WHERE ID =?" 
+    await conn.query(query, [content, id]); 
+    res.status(201).json(); 
+    console.log("data is successfully updated");
+  }catch (err){
+    console.log("error:", err); 
+  }finally {
+    if(conn) conn.release(); 
+  }
+})
