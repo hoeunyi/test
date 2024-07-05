@@ -42,6 +42,7 @@ function MainPage(props){
 
     return (
         <Wrapper> 
+            <h2>게시판</h2>
             <Container>
                     <PostList
                         posts ={posts}

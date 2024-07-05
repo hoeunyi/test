@@ -126,7 +126,7 @@ function PostViewPage() {
   return (
     <Wrapper>
       <Container>
-        <Button onClick={() => navigate("/")}>메인화면</Button>
+        <Button onClick={() => navigate("/posts")}>목록으로</Button>
       </Container>
       <Container>
         <PostContainer>

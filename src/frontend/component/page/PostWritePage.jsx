@@ -66,10 +66,22 @@ const SubmitButton = styled(Button)`
   }
 `;
 
+const FileInput = styled.input`
+  padding: 10px; 
+  font-size : 16px; 
+  border : 1px solid #ddd
+  border-radius : 5px; 
+`
+
 function PostWritePage() {
   const navigate = useNavigate(); 
   const [title, setTitle] = useState('');
   const [content, setContent] = useState(''); 
+  const [file, setFile] = useState(null); 
+
+  const handleFileChange = (e) => {
+    setFile(e.target.files[0]); 
+  }
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -78,13 +90,22 @@ function PostWritePage() {
       alert("제목과 내용을 모두 입력하세요");
       return;
     }
+
+    const formData = new FormData(); 
+    formData.append('title', title); 
+    formData.append('content', content); 
+    if(file){
+      formData.append('file', file); 
+    }
     try {
-      await axios.post("http://localhost:3000/posts", {
-        title, 
-        content,  
+      await axios.post("http://localhost:3000/posts", formData, {
+        header : {
+          'Content-Type' : 'multipart/form-data'
+        }
       }); 
       setTitle(''); 
       setContent(''); 
+      setFile(null); 
       navigate('/');
     } catch (error) {
       console.error(error); 
@@ -93,6 +114,7 @@ function PostWritePage() {
 
   return (
     <FormWrapper>
+      <h2>게시물 작성</h2>
       <Form onSubmit={handleSubmit}>
         <Input
           type="text"
@@ -107,6 +129,11 @@ function PostWritePage() {
           placeholder="내용을 입력하세요"
           rows="10"
           onChange={(e) => setContent(e.target.value)}
+        />
+        <FileInput
+          type = "file"
+          name = "file"
+          onChange={handleFileChange}
         />
         <SubmitButton type="submit">작성 완료</SubmitButton>
       </Form>

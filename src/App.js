@@ -1,13 +1,12 @@
 import React from 'react'; 
-import styled from 'styled-components';
-
-//import { application } from 'express';
 
 //페이지이동 
 import MainPage from './frontend/component/page/MainPage';
 import PostWritePage from './frontend/component/page/PostWritePage';
 import PostViewPage from './frontend/component/page/PostViewPage';
 import PostUpdatePage from './frontend/component/page/PostUpdatePage';
+import JoinPage from './frontend/component/page/login/JoinPage'
+import LoginPage from './frontend/component/page/login/LoginPage';
 
 import {
   BrowserRouter, 
@@ -15,21 +14,17 @@ import {
   Route
 } from "react-router-dom";
 
-const MainTitleText = styled.p`
-  font-size : 24px; 
-  font-weight : bold; 
-  text-align : center;  
-`;
-
 function App(){
   return (
     <BrowserRouter>
-      <MainTitleText>게시판</MainTitleText>
       <Routes>
-        <Route index element= {<MainPage/>}/> 
+        <Route index element= {<LoginPage/>}/> 
+              <Route path ="/join" element={<JoinPage/>}/>
+              <Route path="/posts" element={<MainPage/>}/>
               <Route path="/post-write" element={<PostWritePage />} />
               <Route path="/post/:postId" element={<PostViewPage/> }/>
               <Route path= "post/:postId/update" element={<PostUpdatePage/>}/>
+              <Route path="/join" element = {<JoinPage/>}/>
       </Routes>
     </BrowserRouter>
   );
