@@ -47,8 +47,6 @@ const TableRow = styled.tr`
   }
 `;
 
-
-
 function PostList(props) {
     const { posts, onClickItem } = props;
 

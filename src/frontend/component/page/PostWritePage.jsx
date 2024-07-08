@@ -78,7 +78,6 @@ function PostWritePage() {
   const [title, setTitle] = useState('');
   const [content, setContent] = useState(''); 
   const [file, setFile] = useState(null); 
-
   const handleFileChange = (e) => {
     setFile(e.target.files[0]); 
   }
@@ -99,17 +98,19 @@ function PostWritePage() {
     }
     try {
       await axios.post("http://localhost:3000/posts", formData, {
-        header : {
-          'Content-Type' : 'multipart/form-data'
+        headers : {
+         'Content-Type': 'multipart/form-data; charset=UTF-8;', 
         }
       }); 
+      console.log(file);
       setTitle(''); 
       setContent(''); 
       setFile(null); 
-      navigate('/');
-    } catch (error) {
+      alert("게시물 작성이 완료됐습니다.")
+      navigate('/posts'); 
+    }catch (error) {
       console.error(error); 
-    }
+    }  
   }; 
 
   return (

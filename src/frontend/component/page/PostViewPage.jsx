@@ -4,8 +4,9 @@ import { useNavigate, useParams } from "react-router-dom";
 import styled from "styled-components";
 import Button from "../ui/Button";
 import Comment from "./comment/Comment";
+import FileList from "../list/FileList"; 
 
-const Wrapper = styled.div`
+const Wrapper = styled.div`S
   padding: 16px;
   width: calc(100% - 32px);
   display: flex;
@@ -70,6 +71,8 @@ function PostViewPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [comments, setComments] = useState();
+  const [files, setFiles] = useState(); 
+
 
   useEffect(() => {
     const fetchPost = async () => {
@@ -79,6 +82,8 @@ function PostViewPage() {
         if (response.data) {
           setPost(response.data.result);
           setComments(response.data.commentResult);
+          setFiles(response.data.fileResult); 
+  
         } else {
           setError(new Error("Post not found"));
         }
@@ -109,12 +114,12 @@ function PostViewPage() {
   const handleDelete = async () => {
    if(window.confirm("해당 게시물을 삭제하시겠습니까?")){
     try {
-      await axios.delete(`http://localhost:3000/post/${postId}`);
-      console.log("삭제되었습니다");
-      navigate('/');
+      await axios.delete(`http://localhost:3000/post/${postId}`)
     } catch (error) {
       console.error(error);
     }
+    alert('게시물이 삭제됐습니다'); 
+    navigate("/posts"); 
   }
   };
 
@@ -132,6 +137,7 @@ function PostViewPage() {
         <PostContainer>
           <TitleText>{post.TITLE}</TitleText>
           <ContentText>{post.CONTENT}</ContentText>
+          <FileList files={files} />
         </PostContainer>
       </Container>
       <Comment comments = {comments}/>

@@ -24,8 +24,10 @@ function Comment(props){
     return (
 <Container>
         <h2>댓글</h2>
-        <CommentContainer>
+        <CommentContainer>   
+          {comments.length >0 && (
           <CommentList comments={comments} /> 
+        )}
           <CommentWrite></CommentWrite>
         </CommentContainer>
       </Container>

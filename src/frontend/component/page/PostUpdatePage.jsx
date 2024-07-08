@@ -171,7 +171,7 @@ const handleChange = (e)=> {
   return (
     <Wrapper>
       <Container>
-        <Button onClick={() => navigate("/")}>메인화면</Button>
+        <Button onClick={() => navigate("/posts")}>메인화면</Button>
       </Container>
 
       <Container>

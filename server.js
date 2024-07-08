@@ -1,8 +1,9 @@
-const express = require('express'); //웹서버 구축, API서버 구축, 미들웨어 사용, 동적 웹 페이지 제공 
+const express = require('express'); //웹서버 구축, API서버 구축, 미들웨어 사용, 동적 웹 페이지 제공
+const multer = require('multer');  //파일 업로드를 위해 사용되는 node.js 미들웨어  
 const mariadb = require('mariadb');
 const bodyPaser = require('body-parser'); 
 const cors = require('cors'); 
-const multer = require('multer');  //파일 업로드를 위해 사용되는 node.js의 미들웨어 
+const iconv = require('iconv-lite');  //파일명 인코딩 위해 모듈 추가 
 
 const app = express();
 const port = 3000;
@@ -17,27 +18,20 @@ const pool = mariadb.createPool({
     database:'testdb', 
   }); 
 
-  //첨부파일 업로드 
-  const storage = multer.diskStorage({
-    destination : (req, file, cb) => {
-      cb(null, 'uploads/'); 
-    }, 
-      filename : (req, file, cb) => {
-        cb(null, `${Date.now()}-${file.originalname}`);
-      },
-  });
-
-  const upload = multer({storage}); 
-  
   app.listen(port, () => {
     console.log(`Server is running on port ${port}`);
   });
 
-  app.use(express.json());
+  app.use(express.json({extended:true}));
   app.use(express.urlencoded({extended:true})); 
-   app.use(cors({
+  app.use(cors({
     orgin:'http://localhost:3000'
   }));
+  app.use((req, res, next)=> {
+    res.header("Content-Type", "application/json; charset=UTF-8"); 
+    next(); 
+  }); 
+ 
 
   // 게시물 목록 조회하기 
   app.get('/posts', async (req, res) => {
@@ -56,28 +50,41 @@ const pool = mariadb.createPool({
     }
   });
   
-  // 게시물 추가하기 (첨부파일 추가 )
+
+//첨부파일 저장 
+const storage = multer.memoryStorage(); 
+const upload = multer({storage});
+
+
+  // 게시물 추가하기 (첨부파일 추가)
   app.post('/posts', upload.single('file'), async (req, res) => { 
     let conn; 
     try {
       conn = await pool.getConnection(); 
       //post 요청 본문에서 title과 content 값 추출 
       const { title, content } = req.body;
-      //첨부 파일 
-      const file = req.files; 
-
+      const file = req.file; 
       
-      console.log('Received data:', title, "/", content);
       const result = await conn.query("INSERT INTO posts(title, content) VALUES (?, ?)", [title, content]);
+      const postId = result.insertId; 
+
+      //파일 저장
+      //파일명 인코딩 처리 
+       const originalName = iconv.decode(Buffer.from(file.originalname, 'latin1'), 'utf-8');
+
+      if(file) {
+        const query = 'INSERT INTO files(name, type, data, boardId) VALUES (?, ?, ?, ?)'; 
+        await conn.query(query, [originalName, file.mimetype, file.buffer, postId]); 
+      }
+
       res.status(201).json(); 
-      console.log('Received data is inserted!');
     } catch (err) {
-      res.status(500).json(); 
+      console.error('Error occurred', err); 
+      res.status(500).send('Error uploading file'); 
     } finally {
       if (conn) conn.release();
     }
   });
-  
  
 // 게시물 조회하기
 app.get('/post/:postId', async (req, res) => {
@@ -91,6 +98,12 @@ app.get('/post/:postId', async (req, res) => {
         // 각 게시물에 해당하는 댓글 조회하기 
         const query1 = 'SELECT ID, CONTENT FROM comment WHERE boardID = ?'; 
         const commentResult = await conn.query(query1,[postId]); 
+
+        //첨부 파일 조회하기 
+        const query2 = 'SELECT * FROM files WHERE boardID = ?'; 
+        const fileResult = await conn.query(query2, [postId]); 
+
+        console.log("fileresult : " , fileResult); 
         res.json({result, commentResult});
     } catch (err) {
         console.log('error:', err);

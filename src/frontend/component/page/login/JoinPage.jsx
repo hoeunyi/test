@@ -2,12 +2,12 @@ import React, { useState } from "react";
 import styled from "styled-components";
 import Button from "../../ui/Button";
 import axios from "axios";
-import { Navigate, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 
 const Wrapper = styled.div`
   padding: 16px;
-  width: calc(100% - 32px);
+  width: calc(100% - 32px);s
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -160,7 +160,7 @@ function JoinPage() {
           type="password"
           name="pw"
           value={pw}
-          placeholder="비밀번호 (영문, 숫자, 특수문자 포함 10자 이상)"
+          placeholder="비밀번호"
           autoComplete="off"
           onChange={(e) => setPw(e.target.value)}
         />
