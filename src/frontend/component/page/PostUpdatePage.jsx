@@ -3,7 +3,9 @@ import axios from "axios";
 import { useNavigate, useParams } from "react-router-dom";
 import styled from "styled-components";
 import Button from "../ui/Button";
-import Comment from "./comment/Comment";
+import FileList from "../list/FileList"; 
+import { FaTrash, FaDownload } from "react-icons/fa";
+
 
 const Wrapper = styled.div`
   padding: 16px;
@@ -58,7 +60,6 @@ const ButtonContainer = styled.div`
   max-width: 720px;
   display: flex;
   justify-content: space-between;
-  margin-top: 16px;
 `;
 
 const RightButton = styled.button`
@@ -75,6 +76,31 @@ const RightButton = styled.button`
     background-color: #0056b3;
   }
 `;
+const FileContainer = styled.div`
+  display : flex; 
+  alignItem :center; 
+  justify-content: space-between;
+  `
+
+const FileInput = styled.input`
+  margin-top: 10px; 
+  padding: 10px; 
+  font-size : 16px; 
+  border : 1px solid #ddd
+  border-radius : 5px; 
+`
+
+const Icon = styled.div`
+    margin-left: 8px; 
+    margin-top: 20px; 
+    cursor: pointer; 
+    color: #888; 
+    transition: color 0.3s; 
+  
+    &:hover {
+        color: #333; 
+    }
+`; 
 
 function PostUpdatePage() {
   const navigate = useNavigate();
@@ -84,12 +110,14 @@ function PostUpdatePage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [comments, setComments] = useState([]);
-  // const [title, setTitle] = useState("");
-  // const [content, setContent] = useState("");
-  // const [originalTitle, setOriginalTitle] = useState(""); 
-  // const [originalContent, setOriginalContent]=useState("");  
-  // const [updatedTitle, setUpdatedTitle] = useState(""); 
-  // const [updatedContent, setUpdatedContent] = useState(""); 
+  const [files, setFiles] = useState([]); 
+  const [newFiles, setNewFiles] = useState(); 
+  const [fileYn, setFileYn] = useState("Y");
+
+  const handleFilesChange = (e) =>{
+    //e.target.files[0] : 사용자가 선택한 첫번째 파일을 나타내는 File 객체 
+    setNewFiles(e.target.files[0]) 
+  }
 
   //변경 전 데이터 세팅 
   useEffect(() => {
@@ -101,6 +129,7 @@ function PostUpdatePage() {
           setPost({title:fetchedPost.TITLE, content:fetchedPost.CONTENT});
           setOriginalPost({title:fetchedPost.TITLE, content:fetchedPost.CONTENT})
           setComments(response.data.commentResult);
+          setFiles(response.data.fileResult); 
         } else {
           setError(new Error("Post not found"));
         }
@@ -127,11 +156,7 @@ function PostUpdatePage() {
   }
 
   // 수정 완료 버튼
-  const handleUpdate = async() => {
-
-    // console.log(title, "/", content); 
-    // console.log("original: ", originalTitle,"/", originalContent); 
-    // console.log("update: ", updatedTitle,"/", updatedContent);
+  const handleUpdate = async(id) => {
 
     //1 제목이나 내용이 없는 경우 > alert ("제목과 내용을 모두 입력하세요")
     if(post.title.trim()===""||post.content.trim()===""){
@@ -139,17 +164,36 @@ function PostUpdatePage() {
       return;
     }
     //2 수정된 내용이 없는 경우 > alert ("변경 사항이 없습니다.")
-    if(post.title===originalPost.title&&post.content===originalPost.content){
+    if(post.title===originalPost.title&&post.content===originalPost.content&&!newFiles){
       alert("변경 사항이 없습니다."); 
       return;
     }
-   
+
+    const formData = new FormData(); 
+    formData.append('title', post.title); 
+    formData.append('content', post.content); 
+    if(newFiles){
+      formData.append('newFiles', newFiles); 
+    }
     try {
-      await axios.put(`http://localhost:3000/post/${postId}/update`, {
-        title:post.title, 
-        content:post.content,
+      console.log("newFiles: ",  newFiles); 
+      await axios.put(`http://localhost:3000/post/${postId}/update`, formData, {
+        headers : {
+          'Content-Type' : 'multipart/form-data', 
+        }
       });
-      navigate(`/post/${postId}`);
+      //파일 삭제 반영 
+      if(fileYn ==="N"){
+        try {
+          console.log("파일 진짜 삭제해 ~~"); 
+          axios.delete(`http://localhost:3000/files/${id}`, { data: { id } });  
+        }
+        catch(err){
+          console.error("delete error: ", err); 
+        }
+      }
+      alert("수정이 성공적으로 완료됐습니다"); 
+      navigate(`/post/${postId}`); 
     } catch (error) {
       console.error(error);
     }
@@ -168,12 +212,18 @@ const handleChange = (e)=> {
   }));
 };
 
+    // 첨부파일 삭제 (수정완료 버튼 눌러야 최종 삭제, 안보이게만 함)
+    const handleDelete = () => {
+      if (window.confirm(`삭제하시겠습니까?`)) { 
+          setFileYn("N");
+      } 
+  };
+
   return (
     <Wrapper>
       <Container>
         <Button onClick={() => navigate("/posts")}>메인화면</Button>
       </Container>
-
       <Container>
         <PostContainer>
           <TitleText
@@ -185,15 +235,30 @@ const handleChange = (e)=> {
             name="content"
             defaultValue={post.content}
             onChange={handleChange}
-            
           />
+        
+        {files.length>0&&fileYn ==="Y"?  (
+        <FileContainer>
+         <FileList files={files}></FileList>
+          <Icon onClick={() => handleDelete()}>
+            <FaTrash />
+          </Icon>
+        </FileContainer>
+        ) :(
+        <FileContainer>
+          <FileInput
+          type = "file"
+          name = "files"
+          onChange={handleFilesChange}
+        />
+        </FileContainer>
+        )}
         </PostContainer>
       </Container>
-
-      <Comment comments={comments} />
+     
       <ButtonContainer>
         <RightButton onClick={handleCancel}>취소</RightButton>
-        <RightButton onClick={handleUpdate}>수정완료</RightButton>
+        <RightButton onClick={()=> handleUpdate(files.id)}>수정완료</RightButton>
       </ButtonContainer>
     </Wrapper>
   );

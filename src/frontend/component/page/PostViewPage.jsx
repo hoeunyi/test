@@ -73,8 +73,9 @@ function PostViewPage() {
   const [comments, setComments] = useState();
   const [files, setFiles] = useState(); 
 
-
+  //리액트가 렌더링 될 때 특정 작업을 실행 
   useEffect(() => {
+    //fetch 데이터 요청 함수 
     const fetchPost = async () => {
       try {
         const response = await axios.get(`http://localhost:3000/post/${postId}`);
@@ -83,7 +84,6 @@ function PostViewPage() {
           setPost(response.data.result);
           setComments(response.data.commentResult);
           setFiles(response.data.fileResult); 
-  
         } else {
           setError(new Error("Post not found"));
         }
@@ -110,23 +110,23 @@ function PostViewPage() {
     return <div>Post not found</div>;
   }
 
-  //삭제 버튼 클릭 
-  const handleDelete = async () => {
-   if(window.confirm("해당 게시물을 삭제하시겠습니까?")){
-    try {
-      await axios.delete(`http://localhost:3000/post/${postId}`)
-    } catch (error) {
-      console.error(error);
-    }
-    alert('게시물이 삭제됐습니다'); 
-    navigate("/posts"); 
-  }
-  };
-
   //수정 버튼 클릭> 수정화면으로 이동 
   const handleUpdate = async () => {
     navigate(`/post/${postId}/update`)
   }
+
+  //첨부파일 삭제 
+  const handleDelete = async () => {
+    if(window.confirm("해당 게시물을 삭제하시겠습니까?")){
+     try {
+       await axios.delete(`http://localhost:3000/post/${postId}`)
+     } catch (error) {
+       console.error(error);
+     }
+     alert('게시물이 삭제됐습니다'); 
+     navigate("/posts"); 
+   }
+   };
 
   return (
     <Wrapper>
@@ -137,7 +137,7 @@ function PostViewPage() {
         <PostContainer>
           <TitleText>{post.TITLE}</TitleText>
           <ContentText>{post.CONTENT}</ContentText>
-          <FileList files={files} />
+           {files.length>0 &&<FileList files={files}/>}
         </PostContainer>
       </Container>
       <Comment comments = {comments}/>

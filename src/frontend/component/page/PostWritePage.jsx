@@ -77,9 +77,9 @@ function PostWritePage() {
   const navigate = useNavigate(); 
   const [title, setTitle] = useState('');
   const [content, setContent] = useState(''); 
-  const [file, setFile] = useState(null); 
-  const handleFileChange = (e) => {
-    setFile(e.target.files[0]); 
+  const [files, setFiles] = useState(null); 
+  const handleFilesChange = (e) => {
+    setFiles(e.target.files[0]); 
   }
 
   const handleSubmit = async (e) => {
@@ -93,8 +93,8 @@ function PostWritePage() {
     const formData = new FormData(); 
     formData.append('title', title); 
     formData.append('content', content); 
-    if(file){
-      formData.append('file', file); 
+    if(files){
+      formData.append('files', files); 
     }
     try {
       await axios.post("http://localhost:3000/posts", formData, {
@@ -102,10 +102,9 @@ function PostWritePage() {
          'Content-Type': 'multipart/form-data; charset=UTF-8;', 
         }
       }); 
-      console.log(file);
       setTitle(''); 
       setContent(''); 
-      setFile(null); 
+      setFiles(null); 
       alert("게시물 작성이 완료됐습니다.")
       navigate('/posts'); 
     }catch (error) {
@@ -133,8 +132,8 @@ function PostWritePage() {
         />
         <FileInput
           type = "file"
-          name = "file"
-          onChange={handleFileChange}
+          name = "files"
+          onChange={handleFilesChange}
         />
         <SubmitButton type="submit">작성 완료</SubmitButton>
       </Form>

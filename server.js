@@ -55,26 +55,24 @@ const pool = mariadb.createPool({
 const storage = multer.memoryStorage(); 
 const upload = multer({storage});
 
-
   // 게시물 추가하기 (첨부파일 추가)
-  app.post('/posts', upload.single('file'), async (req, res) => { 
+  app.post('/posts', upload.single('files'), async (req, res) => { 
     let conn; 
     try {
+
       conn = await pool.getConnection(); 
       //post 요청 본문에서 title과 content 값 추출 
       const { title, content } = req.body;
-      const file = req.file; 
+      const files = req.file; 
       
       const result = await conn.query("INSERT INTO posts(title, content) VALUES (?, ?)", [title, content]);
       const postId = result.insertId; 
-
       //파일 저장
-      //파일명 인코딩 처리 
-       const originalName = iconv.decode(Buffer.from(file.originalname, 'latin1'), 'utf-8');
-
-      if(file) {
+      if(files) {
+        //파일명 인코딩 처리 
+       const originalName = iconv.decode(Buffer.from(files.originalname, 'latin1'), 'utf-8');
         const query = 'INSERT INTO files(name, type, data, boardId) VALUES (?, ?, ?, ?)'; 
-        await conn.query(query, [originalName, file.mimetype, file.buffer, postId]); 
+        await conn.query(query, [originalName, files.mimetype, files.buffer, postId]); 
       }
 
       res.status(201).json(); 
@@ -100,17 +98,40 @@ app.get('/post/:postId', async (req, res) => {
         const commentResult = await conn.query(query1,[postId]); 
 
         //첨부 파일 조회하기 
-        const query2 = 'SELECT * FROM files WHERE boardID = ?'; 
+        const query2 = 'SELECT * FROM files WHERE boardId = ?'; 
         const fileResult = await conn.query(query2, [postId]); 
-
-        console.log("fileresult : " , fileResult); 
-        res.json({result, commentResult});
+        res.json({result, commentResult, fileResult});
     } catch (err) {
         console.log('error:', err);
     } finally {
         if (conn) conn.release();
     }
 });
+
+//파일 다운로드 엔드포인트 추가 
+app.get('/files/:fileId', async(req, res) => {
+  let conn; 
+  try {
+    const {fileId} = req.params; 
+    conn = await pool.getConnection(); 
+    const query = 'SELECT name, type, data FROM files WHERE id = ?'; 
+    const result = await conn.query(query, [fileId]); 
+    
+    const file = result[0] ;
+    if(!file){
+      console.log("no file!", error); 
+      return; 
+    }
+    const encodedFileName = encodeURIComponent(file.name); 
+    res.setHeader('Content-Disposition',`attachment; filename=${encodedFileName}`); 
+    res.setHeader('Content-type', file.type); 
+    res.send(file.data); 
+  }catch (err){
+    console.error("Error occurred: ", err);
+  }finally {
+    if(conn) conn.release(); 
+  }
+})
 
 //게시물 삭제하기 
 app.delete('/post/:postId', async(req, res) => {
@@ -136,13 +157,34 @@ app.delete('/post/:postId', async(req, res) => {
     }
 });
 
+//첨부파일 삭제하기 
+app.delete('/files/:fileId', async(req, res)=> {
+  let conn; 
+  try { 
+    const {fileId} = req.params; 
+    conn = await pool.getConnection(); 
+    const query = 'DELETE FROM files WHERE ID = ?'; 
+    const result = conn.query(query, [fileId]);  
+    res.json(result); 
+    console.log("삭제 됐음 파일"); 
+  } catch(err){
+    console.error("error: ", err); 
+    res.status(500).send('Interneal Server Error'); 
+  }finally {
+    if(conn) conn.release
+  }
+
+
+})
 //게시물 update 하기 
-app.put('/post/:postId/update', async (req, res) => {
+app.put('/post/:postId/update', upload.single('newFiles'), async (req, res) => {
   let conn;
   try {
     conn = await pool.getConnection();
     const { postId } = req.params;
     const { title, content } = req.body;
+    const newFiles = req.file; 
+    console.log(title, content, newFiles); 
 
     if (!title || !content) {
       return res.status(400).send('Title and content cannot be empty');
@@ -152,6 +194,13 @@ app.put('/post/:postId/update', async (req, res) => {
 
     if (result.affectedRows === 0) {
       return res.status(404).send('Post not found');
+    }
+
+    //파일 update 하기 ~!
+    if(newFiles){
+      const originalName = iconv.decode(Buffer.from(newFiles.originalname,'latin1'), 'utf-8'); 
+      const query = 'INSERT INTO files(name, type, data, boardId) VALUES(?,?,?,?)'; 
+      await conn.query(query, [originalName, newFiles.mimetype, newFiles.buffer, postId]); 
     }
 
     res.status(201).json();

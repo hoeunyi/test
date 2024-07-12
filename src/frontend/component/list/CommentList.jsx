@@ -16,7 +16,7 @@ const Wrapper = styled.div`
   const CommentContainer = styled.div`
     width: 100%;
     max-width: 800px;
-    //margin-top: 5px;
+    margin-top: 5px;
     background-color: #f9f9f9;
     border-radius: 8px;
     padding: 16px;
