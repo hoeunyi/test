@@ -166,7 +166,6 @@ app.delete('/files/:fileId', async(req, res)=> {
     const query = 'DELETE FROM files WHERE ID = ?'; 
     const result = conn.query(query, [fileId]);  
     res.json(result); 
-    console.log("삭제 됐음 파일"); 
   } catch(err){
     console.error("error: ", err); 
     res.status(500).send('Interneal Server Error'); 

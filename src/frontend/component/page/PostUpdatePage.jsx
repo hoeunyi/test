@@ -4,7 +4,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import styled from "styled-components";
 import Button from "../ui/Button";
 import FileList from "../list/FileList"; 
-import { FaTrash, FaDownload } from "react-icons/fa";
+import { FaTrash } from "react-icons/fa";
 
 
 const Wrapper = styled.div`
@@ -158,13 +158,13 @@ function PostUpdatePage() {
   // 수정 완료 버튼
   const handleUpdate = async(id) => {
 
-    //1 제목이나 내용이 없는 경우 > alert ("제목과 내용을 모두 입력하세요")
+    //1 제목이나 내용이 없는 경우 
     if(post.title.trim()===""||post.content.trim()===""){
       alert("제목과 내용을 모두 입력하세요"); 
       return;
     }
-    //2 수정된 내용이 없는 경우 > alert ("변경 사항이 없습니다.")
-    if(post.title===originalPost.title&&post.content===originalPost.content&&!newFiles){
+    //2 수정된 내용이 없는 경우
+    if(post.title===originalPost.title&&post.content===originalPost.content&&!newFiles&&fileYn ==="Y"){
       alert("변경 사항이 없습니다."); 
       return;
     }
@@ -176,7 +176,6 @@ function PostUpdatePage() {
       formData.append('newFiles', newFiles); 
     }
     try {
-      console.log("newFiles: ",  newFiles); 
       await axios.put(`http://localhost:3000/post/${postId}/update`, formData, {
         headers : {
           'Content-Type' : 'multipart/form-data', 
@@ -185,8 +184,8 @@ function PostUpdatePage() {
       //파일 삭제 반영 
       if(fileYn ==="N"){
         try {
-          console.log("파일 진짜 삭제해 ~~"); 
-          axios.delete(`http://localhost:3000/files/${id}`, { data: { id } });  
+          const fileId = files[0].id;
+          axios.delete(`http://localhost:3000/files/${fileId}`, { data: { fileId } });  
         }
         catch(err){
           console.error("delete error: ", err); 
